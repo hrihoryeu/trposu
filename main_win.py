@@ -1,9 +1,17 @@
 from tkinter import Tk, Label, Menu, Menubutton, Checkbutton, Frame, LEFT, LabelFrame, Button, DISABLED, IntVar, RAISED, messagebox, ttk
 import json
+import pymongo
+from pymongo import MongoClient 
+from data import list_of_names
 
 class Subscription():
     def __init__(self):
-        self.data_file = open('visitors_data.txt', 'r', encoding='utf-8')
+        self.cluster = MongoClient('mongodb+srv://Yegor:1234@cluster0.z0dtg.mongodb.net/<dbname>?retryWrites=true&w=majority')
+
+        self.db = self.cluster['FitnessCenter']
+        self.collection = self.db['visitors']
+
+        self.list_of_names = list_of_names
 
         self.main = Tk()
 
@@ -18,96 +26,77 @@ class Subscription():
         self.left_frame.pack(side=LEFT)
         self.right_frame.pack(side=LEFT)
 
-        self.info_label = Label(self.left_frame, height=5)
+        self.info_label = Label(self.left_frame, height=4)
         self.info_label.pack(padx=5, pady=5)
 
         self.all_in_var = IntVar()
         self.all_in_check = Checkbutton(self.left_frame, text='Все пришли', variable=self.all_in_var, onvalue=True, offvalue=False, indicatoron=1)
         self.all_in_check.pack(padx=5, pady=5)
-        
-        self.list_of_visitors = json.load(self.data_file)
 
-        self.not_all_in = ttk.Combobox(self.left_frame, text='Список посетителей', width=25, values = list(self.list_of_visitors))
+        self.not_all_in = ttk.Combobox(self.left_frame, text='Список посетителей', width=25, values = self.list_of_names)
         self.not_all_in.pack(padx=5, pady=5)
-
-        for i in enumerate(self.list_of_visitors):
-            self.list_of_visitors[i[1]].append(True)
-        print(self.list_of_visitors)
 
         self.start_button = Button(self.right_frame, text='Провести занятие', width=25, command=self.start)
         self.absent_button = Button(self.right_frame, text='Отсутствует', width=25, command=self.absent)
         self.top_up_button = Button(self.right_frame, text='Пополнить абонемент', width=25, command=self.top_up)
         self.show_data_button = Button(self.right_frame, text='Отобразить данные', width=25, command=self.show_data)
-        self.save_button = Button(self.right_frame, text='Сохранить данные', width=25, command=self.save_file)
 
         self.start_button.pack(padx=5, pady=5)
         self.absent_button.pack(padx=5, pady=5)
         self.top_up_button.pack(padx=5, pady=5)
         self.show_data_button.pack(padx=5, pady=5)
-        self.save_button.pack(padx=5, pady=5)
 
         self.main.mainloop()
 
     def absent(self):
-        self.list_of_visitors[self.not_all_in.get()][1] = False
-        self.info_label['text'] = 'Отсутствие {} не повлияет\nна количество занятий'.format(self.not_all_in.get())
-        print(self.list_of_visitors)       
+        self.collection.update_one({'name': self.not_all_in.get()}, {'$set':{'indicator':False}})
+        self.info_label['text'] = 'Отсутствие {} не повлияет\nна количество занятий'.format(self.not_all_in.get())  
 
     def start(self):
         if self.all_in_var.get():
             self.all_to_true_false(True)
         
         if self.all_false():
-            print(self.all_false())
             self.info_label['text'] = 'На занятие никто\nне пришел'
             self.all_to_true_false(True)
         else:
             check = self.with_zero()
             if check == True:
-                for i in self.list_of_visitors:
-                    if self.list_of_visitors[i][1]:
-                        self.list_of_visitors[i][0] -= 1
-                self.info_label['text'] = 'Занятие успешно\nпроведено'
+                for name in self.list_of_names:
+                    for parametr in self.collection.find({'name': name}):
+                        if parametr['indicator'] == True:
+                            self.collection.update_one({'name':name}, {'$set':{'subscription':parametr['subscription'] - 1}})
+                            self.info_label['text'] = 'Занятие успешно\nпроведено'
                 self.all_to_true_false(True)
             else:
                 self.info_label['text'] = '{} нужно пополнить\nабонемент'.format(check[1])
                 
-        
     def show_data(self):
-        self.info_label['text'] = '{}:\nосталось {} занятий(е/я)'.format(self.not_all_in.get(), self.list_of_visitors[self.not_all_in.get()][0])
+        for parametr in self.collection.find({'name':self.not_all_in.get()}):
+            self.info_label['text'] = '{}:\nосталось {} занятий(е/я)'.format(self.not_all_in.get(), parametr['subscription'])
    
     def top_up(self):
-        if self.list_of_visitors[self.not_all_in.get()][0] < 3:
-            self.list_of_visitors[self.not_all_in.get()][0] = 8
-            self.info_label['text'] = 'Абонемент для {}\n успешно пополнен'.format(self.not_all_in.get())
-        else:
-            self.info_label['text'] = 'ERROR!\nУ {} осталось\nбольше 2х занятий'.format(self.not_all_in.get())
+        for parametr in self.collection.find({'name':self.not_all_in.get()}):
+            if parametr['subscription'] < 3:
+                self.collection.update_one({'name': self.not_all_in.get()}, {'$set':{'subscription':8}})
+                self.info_label['text'] = 'Абонемент для {}\n успешно пополнен'.format(self.not_all_in.get())
+            else:
+                self.info_label['text'] = 'ERROR!\nУ {} осталось\nбольше 2х занятий'.format(self.not_all_in.get())
     
-    def counter_func(self):
-        a = 0
-        counter = dict()
-        for i in self.list_of_visitors:
-            a += 1
-            if self.list_of_visitors[i][1].get() == True:
-                counter.update({a: i})
-        return counter
-    
-    def save_file(self):
-        self.info_label['text'] = 'Успешное сохранение'
-
     def all_to_true_false(self, bool_var = bool):
         if bool_var == False:
-            for i in self.list_of_visitors:
-                self.list_of_visitors[i][1] = False
+            for i in self.list_of_names:
+                self.collection.update_one({'name': i}, {'$set':{'indicator':False}})
         else:
-            for i in self.list_of_visitors:
-                self.list_of_visitors[i][1] = True
+            for i in self.list_of_names:
+                self.collection.update_one({'name': i}, {'$set':{'indicator':True}})
     
     def all_false(self):
         count = 0
-        for i in self.list_of_visitors:
-            if self.list_of_visitors[i][1] == True:
-                count += 1
+        for name in self.list_of_names:
+            for parameter in self.collection.find({'name':name}):
+                if parameter['indicator'] == True:
+                    count += 1 
         if count == 0:
             return True
         else:
@@ -116,10 +105,11 @@ class Subscription():
     def with_zero(self):
         count = 0
         who = ''
-        for i in self.list_of_visitors:
-            if self.list_of_visitors[i][0] < 1 and self.list_of_visitors[i][1] == True:
-                count += 1
-                who = i
+        for name in self.list_of_names:
+            for parameter in self.collection.find({'name':name}):
+                if parameter['subscription'] < 1 and parameter['indicator'] == True:
+                    count += 1
+                    who = name
         if count == 0:
             return True
         else:
