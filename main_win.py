@@ -59,7 +59,8 @@ class Subscription():
         
         if self.all_false():
             print(self.all_false())
-            self.info_label['text'] = 'Нужно хоть\nчто-то нажать'
+            self.info_label['text'] = 'На занятие никто\nне пришел'
+            self.all_to_true_false(True)
         else:
             check = self.with_zero()
             if check == True:
