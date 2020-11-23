@@ -94,22 +94,34 @@ class Subscription():
             print(self.all_false())
             self.info_label['text'] = 'Нужно хоть\nчто-то нажать'
         else:
-            for i in self.list_of_visitors:
-                if self.list_of_visitors[i][1]:
-                    self.list_of_visitors[i][0] -= 1
-            self.info_label['text'] = 'Занятие успешно\nпроведено'
-            self.all_to_true_false(True)
+            check = self.with_zero()
+            if check == True:
+                for i in self.list_of_visitors:
+                    if self.list_of_visitors[i][1]:
+                        self.list_of_visitors[i][0] -= 1
+                self.info_label['text'] = 'Занятие успешно\nпроведено'
+                self.all_to_true_false(True)
+            else:
+                self.info_label['text'] = '{} нужно пополнить\nабонемент'.format(check[1])
+                
         
     def show_data(self):
         self.info_label['text'] = '{}:\nосталось {} занятий(е/я)'.format(self.not_all_in.get(), self.list_of_visitors[self.not_all_in.get()][0])
 
-    def top_up(self):
+    def top_up1(self):
         for i in self.counter_func():
             if self.list_of_visitors[self.counter_func()[i]][0] < 3:
                 self.list_of_visitors[self.counter_func()[i]][0] = 8
                 self.info_label['text'] = 'Абонемент для {}\n успешно пополнен'.format(self.counter_func()[i])
             else:
                 self.info_label['text'] = 'ERROR!\nУ {} осталось\nбольше 2х занятий'.format(self.counter_func()[i])
+    
+    def top_up(self):
+        if self.list_of_visitors[self.not_all_in.get()][0] < 3:
+            self.list_of_visitors[self.not_all_in.get()][0] = 8
+            self.info_label['text'] = 'Абонемент для {}\n успешно пополнен'.format(self.not_all_in.get())
+        else:
+            self.info_label['text'] = 'ERROR!\nУ {} осталось\nбольше 2х занятий'.format(self.not_all_in.get())
     
     def counter_func(self):
         a = 0
@@ -143,8 +155,8 @@ class Subscription():
 
     def with_zero(self):
         for i in self.list_of_visitors:
-            if self.list_of_visitors[i][0] == 0:
-                return False
+            if self.list_of_visitors[i][0] < 1:
+                return [False, i]
             else:
                 return True
 
