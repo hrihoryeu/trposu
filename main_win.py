@@ -53,39 +53,6 @@ class Subscription():
         self.info_label['text'] = 'Отсутствие {} не повлияет\nна количество занятий'.format(self.not_all_in.get())
         print(self.list_of_visitors)       
 
-    def start_1(self):
-        count = 0
-        if self.all_in_var.get():
-            for i in self.list_of_visitors:
-                self.all_in_check.deselect()
-                if self.list_of_visitors[i][0] < 1:
-                    break
-                self.list_of_visitors[i][0] -= 1
-                count += 1
-            if count < len(self.list_of_visitors):
-                self.info_label['text'] = 'Нужно пополнить абонемент\nдля {}'.format(i)
-                for i in enumerate(self.list_of_visitors):
-                    if i[0] < count:
-                        self.list_of_visitors[i[1]][0] += 1
-            else:
-                self.info_label['text'] = 'Занятие успешно\nпроведено'
-        elif len(self.new_list) > 0:
-            for i in self.new_list:
-                if self.list_of_visitors[i][0] < 1:
-                    break
-                self.list_of_visitors[i][0] -= 1
-                count += 1
-            if count < len(self.list_of_visitors):
-                self.info_label['text'] = 'Нужно пополнить абонемент\nдля {}'.format(i)
-                for i in enumerate(self.list_of_visitors):
-                    if i[0] < count:
-                        self.list_of_visitors[i[1]][0] += 1
-            else:
-                self.new_list = list()
-                self.info_label['text'] = 'Занятие успешно\nпроведено'
-        else:
-            self.info_label['text'] = 'Нужно хоть\nчто-то нажать'
-
     def start(self):
         if self.all_in_var.get():
             self.all_to_true_false(True)
@@ -107,15 +74,7 @@ class Subscription():
         
     def show_data(self):
         self.info_label['text'] = '{}:\nосталось {} занятий(е/я)'.format(self.not_all_in.get(), self.list_of_visitors[self.not_all_in.get()][0])
-
-    def top_up1(self):
-        for i in self.counter_func():
-            if self.list_of_visitors[self.counter_func()[i]][0] < 3:
-                self.list_of_visitors[self.counter_func()[i]][0] = 8
-                self.info_label['text'] = 'Абонемент для {}\n успешно пополнен'.format(self.counter_func()[i])
-            else:
-                self.info_label['text'] = 'ERROR!\nУ {} осталось\nбольше 2х занятий'.format(self.counter_func()[i])
-    
+   
     def top_up(self):
         if self.list_of_visitors[self.not_all_in.get()][0] < 3:
             self.list_of_visitors[self.not_all_in.get()][0] = 8
@@ -154,14 +113,15 @@ class Subscription():
             return False
 
     def with_zero(self):
+        count = 0
+        who = ''
         for i in self.list_of_visitors:
-            if self.list_of_visitors[i][0] < 1:
-                return [False, i]
-            else:
-                return True
+            if self.list_of_visitors[i][0] < 1 and self.list_of_visitors[i][1] == True:
+                count += 1
+                who = i
+        if count == 0:
+            return True
+        else:
+            return [False, who]
 
-
-'''    def no_access(some_list = dict):
-        for i in some_list:
-            if '''
 prog = Subscription()
