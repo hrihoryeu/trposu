@@ -1,6 +1,5 @@
 import pymongo
-from pymongo import MongoClient 
-import PIL
+from pymongo import MongoClient
 cluster = MongoClient('mongodb+srv://Yegor:1234@cluster0.z0dtg.mongodb.net/<dbname>?retryWrites=true&w=majority')
 
 db = cluster['FitnessCenter']
