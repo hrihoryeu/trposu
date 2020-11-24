@@ -4,6 +4,7 @@ import pymongo
 from pymongo import MongoClient 
 from data import list_of_names
 
+
 class Subscription():
     def __init__(self):
         self.cluster = MongoClient('mongodb+srv://Yegor:1234@cluster0.z0dtg.mongodb.net/<dbname>?retryWrites=true&w=majority')
