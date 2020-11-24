@@ -33,7 +33,10 @@ class Subscription():
         self.all_in_check = Checkbutton(self.left_frame, text='Все пришли', variable=self.all_in_var, onvalue=True, offvalue=False, indicatoron=1)
         self.all_in_check.pack(padx=5, pady=5)
 
-        self.not_all_in = ttk.Combobox(self.left_frame, text='Список посетителей', width=25, values = self.list_of_names)
+        self.group_box = ttk.Combobox(self.left_frame, width=25, values = self.list_of_names)
+        self.group_box.pack(padx=5, pady=5)
+
+        self.not_all_in = ttk.Combobox(self.left_frame, width=25, values = self.list_of_names)
         self.not_all_in.pack(padx=5, pady=5)
 
         self.start_button = Button(self.right_frame, text='Провести занятие', width=25, command=self.start)
