@@ -1,10 +1,9 @@
 import pymongo
-from pymongo import MongoClient 
+from pymongo import MongoClient
+cluster = MongoClient('localhost', 27017)
 
-cluster = MongoClient('mongodb+srv://Yegor:1234@cluster0.z0dtg.mongodb.net/<dbname>?retryWrites=true&w=majority')
-
-db = cluster['FitnessCenter']
-collection = db['visitors']
+db = cluster.FitnessCenter
+collection = db.visitors
 
 names = collection.find({})
 list_of_names = list()

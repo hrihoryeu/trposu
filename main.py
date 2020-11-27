@@ -1,10 +1,9 @@
 from tkinter import Tk, Label, Menu, Menubutton, Checkbutton, Frame, LEFT, LabelFrame, Button, DISABLED, IntVar, RAISED, messagebox, ttk
-import json
 import pymongo
 from pymongo import MongoClient 
 from data import list_of_names
 
-class Subscription():
+class FitnessCenter():
     def __init__(self):
         self.cluster = MongoClient('localhost', 27017)
 
@@ -38,10 +37,10 @@ class Subscription():
         self.not_all_in = ttk.Combobox(self.left_frame, width=25, values = self.list_of_names)
         self.not_all_in.pack(padx=5, pady=5)
 
-        self.start_button = Button(self.right_frame, text='Провести занятие', width=25, command=self.start)
-        self.absent_button = Button(self.right_frame, text='Отсутствует', width=25, command=self.absent)
-        self.top_up_button = Button(self.right_frame, text='Пополнить абонемент', width=25, command=self.top_up)
-        self.show_data_button = Button(self.right_frame, text='Отобразить данные', width=25, command=self.show_data)
+        self.start_button = Button(self.right_frame, text='Провести занятие', width=25, command=Subscription.start)
+        self.absent_button = Button(self.right_frame, text='Отсутствует', width=25, command=Subscription.absent)
+        self.top_up_button = Button(self.right_frame, text='Пополнить абонемент', width=25, command=Subscription.top_up)
+        self.show_data_button = Button(self.right_frame, text='Отобразить данные', width=25, command=Subscription.show_data)
 
         self.start_button.pack(padx=5, pady=5)
         self.absent_button.pack(padx=5, pady=5)
@@ -50,6 +49,7 @@ class Subscription():
 
         self.main.mainloop()
 
+class Subscription(FitnessCenter):
     def absent(self):
         self.collection.update_one({'name': self.not_all_in.get()}, {'$set':{'indicator':False}})
         self.info_label['text'] = 'Отсутствие {} не повлияет\nна количество занятий'.format(self.not_all_in.get())  
@@ -116,5 +116,6 @@ class Subscription():
             return True
         else:
             return [False, who]
+            
 
-prog = Subscription()
+FitnessCenter()
